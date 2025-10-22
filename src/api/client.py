@@ -1,0 +1,20 @@
+import os
+import requests
+
+
+class APIClient:
+	"""Small wrapper around requests to keep tests using a client instead of calling requests directly.
+
+	The client uses a base_url from environment variable BASE_URL or a provided value.
+	"""
+
+	def __init__(self, base_url: str | None = None, timeout: int = 10):
+		self.base_url = base_url
+		self.timeout = timeout
+
+	def _build_url(self, endpoint: str) -> str:
+		return f"{self.base_url.rstrip('/')}{endpoint}"
+
+	def post(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+		url = self._build_url(endpoint)
+		return requests.post(url, json=json, headers=headers, params=params, timeout=self.timeout)

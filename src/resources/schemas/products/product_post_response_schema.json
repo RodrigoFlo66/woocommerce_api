@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WooCommerce Product Response Schema",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "slug",
+    "date_created",
+    "date_modified",
+    "status",
+    "type",
+    "permalink",
+    "categories"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID único del producto generado por el sistema."
+    },
+    "name": {
+      "type": "string",
+      "description": "Nombre del producto. Debe coincidir con el enviado en el payload."
+    },
+    "slug": {
+      "type": "string",
+      "description": "Slug del producto generado automáticamente."
+    },
+    "permalink": {
+      "type": "string",
+      "format": "url",
+      "description": "URL pública del producto."
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de creación del producto (local)."
+    },
+    "date_modified": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de última modificación del producto (local)."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["simple", "grouped", "external", "variable"],
+      "description": "Tipo de producto."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "pending", "private", "publish"],
+      "description": "Estado del producto. Debe ser 'publish' para una creación exitosa por defecto."
+    },
+    "price": {
+        "type": ["string", "number", "null"],
+        "description": "Precio actual del producto."
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
+        }
+      },
+      "description": "Lista de categorías a las que pertenece el producto."
+    }
+  },
+  "additionalProperties": true
+}
