@@ -23,11 +23,11 @@ def _ensure_payload_dict(request_payload):
     return {}
 
 
-def assert_product_created(response, request_payload):
+def assert_product_created(response, request_payload, status_code=201):
     """Assert a successful product creation and that key fields match the request payload.
     """
     req_payload = _ensure_payload_dict(request_payload)
-    assert_status_code(response, 201)
+    assert_status_code(response, status_code)
     body = response.json()
     logger.info(f"Response body: {body}")
     fields_to_check = ["type", "description", "regular_price"]
@@ -60,6 +60,8 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
     - expected_message_contains: substring expected to be present in the error message/body
     - expected_field_errors: dict mapping field -> substring expected in error details
     """
+    logger.info(f"Status code recibido: {response.status_code}, Esperado: {expected_status}")
+
     if expected_status is not None:
         if isinstance(expected_status, Iterable) and not isinstance(expected_status, (str, bytes)):
             assert response.status_code in expected_status, f"Expected status in {expected_status}, got {response.status_code}"
@@ -78,7 +80,11 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
         body_text = getattr(response, "text", "") or ""
 
     status = getattr(response, "status_code", None)
-
+    
+    if status == 201:
+        logger.error(f"success (201). Response body: {body_text}")
+        return
+    
     if status == 400:
         logger.error(f"Bad Request (400). Response body: {body_text}")
         if expected_field_errors:
@@ -109,7 +115,6 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
                 logger.error(f"Expected field error for '{field}' containing '{substr}' not found in response body")
                 raise AssertionError(f"Expected field error for '{field}' containing '{substr}' not found")
 
-    logger.info(f"Status code recibido: {response.status_code}, Esperado: {expected_status}")
     logger.info("Producto no creado (error no específico manejado)")
 
 

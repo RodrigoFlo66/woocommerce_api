@@ -10,7 +10,7 @@ def assert_status_code(response, expected: int):
 		assert response.status_code == expected, f"Expected {expected} but got {response.status_code}: {response.text}"
 		logger.success(f"Status code esperado: {response.status_code} == {expected}")
 	except AssertionError:
-		logger.error(f"Status code check failed: expected {expected}, got {response.status_code}. Response: {response.text}")
+		logger.error(f"Status code check failed: expected {expected}, got {response.status_code}. Response: {response.json()}")
 		raise
 
 

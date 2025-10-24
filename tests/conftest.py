@@ -40,20 +40,24 @@ def create_product(client, headers, request, logger):
     """
     created_ids = []
 
-    def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None):
+    def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None, merge: bool = False):
         from src.resources.payloads.products.create_product import build_create_product_payload
         from src.api.endpoints import Endpoints
-
-        if payload is None:
-            base_payload = build_create_product_payload()
-        else:
-            base_payload = payload
-
-        if payload_overrides is not None:
-            if payload_overrides == {}:
-                base_payload = payload_overrides
-            else:
+        if merge:
+            base_payload = build_create_product_payload() if payload is None else dict(payload)
+            if payload_overrides is not None:
                 base_payload.update(payload_overrides)
+        else:
+            if payload is None:
+                base_payload = build_create_product_payload()
+            else:
+                base_payload = dict(payload)
+
+            if payload_overrides is not None:
+                if payload_overrides == {}:
+                    base_payload = payload_overrides
+                else:
+                    base_payload.update(payload_overrides)
 
         if headers_overrides is not None:
             hdrs = headers_overrides

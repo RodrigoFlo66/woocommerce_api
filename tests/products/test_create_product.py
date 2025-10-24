@@ -2,22 +2,36 @@ import pytest
 
 from src.assertions.products.products_asserts import assert_product_created
 from src.assertions.products.products_asserts import assert_product_failure
+from src.utils.logger import get_logger
+from src.utils.faker_config import get600Caracteres, get_name_with_special_chars
 
+logger = get_logger("test_create_product")
 
 @pytest.mark.parametrize(
     "payload_overrides, expected_generated_name, expected_status",
     [
         pytest.param(None, None, 201, marks=pytest.mark.smoke, id="valid_full"),
         pytest.param({"name": None}, "Producto", 201, marks=pytest.mark.negative, id="no_name"),
+        pytest.param({"name": get600Caracteres()}, None, 400, marks=pytest.mark.xfail(reason="Permite crear productos con nombres mayores a 600 caracteres"), id="name_600_chars"),
+        pytest.param({"name": get_name_with_special_chars()}, None, 201, marks=[pytest.mark.negative, pytest.mark.xfail(reason="La respuesta modifica los caracteres especiales de un nombre")], id="name_special_chars"),
+        pytest.param({"name": "  "}, "Producto", 201, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite crear productos sin nombres al introducir espacios")], id="name_spaces_chars"),
         pytest.param({}, "Producto", 201, marks=pytest.mark.negative, id="empty_payload_expected_Producto"),
         pytest.param({"name": True}, None, 400, marks=pytest.mark.negative , id="name_boolean"),
         pytest.param({"regular_price": 19.9}, None, 400, marks=pytest.mark.negative, id="regular_price_double"),
+        pytest.param({"regular_price": "19.9", "sale_price": "20"}, None, 400, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Se crea el producto eliminando el valor de sale_price cuando este es mayor a regular_price")], id="sale_price_higher_than_regular"),
+        pytest.param({"regular_price": "-12", "sale_price": "-16"}, None, 400, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite crear productos con valores precios negativos")], id="sale_and_regular_price_negative"),
+        pytest.param({"ffffff": "qweq"}, None, 201, marks=pytest.mark.negative, id="campo_inexistente"),
     ],
 )
 def test_create_product_parametrized(create_product, payload_overrides, expected_generated_name, expected_status):
     """Test parametrizados.
     """
-    resp, used_payload = create_product(payload_overrides=payload_overrides)
+    if payload_overrides and isinstance(payload_overrides, dict) and "regular_price" in payload_overrides and "sale_price" in payload_overrides:
+        resp, used_payload = create_product(payload_overrides=payload_overrides, merge=True)
+        assert_product_failure(resp, expected_status=400)
+        pytest.xfail("Known issue: sale_price greater than regular_price should be rejected — documented as xfail")
+    else:
+        resp, used_payload = create_product(payload_overrides=payload_overrides)
 
     if expected_status == 400:
         assert_product_failure(resp, expected_status=400)
