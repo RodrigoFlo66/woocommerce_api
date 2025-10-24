@@ -91,6 +91,12 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
         logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
         logger.info("Producto no creado por falta de headers de autenticación")
         return
+    
+    if status == 404:
+        logger.error(f"Not Found (404). Response body: {body_text}")
+        logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
+        logger.info("Producto no creado por metodo http incorrecto")
+        return
 
     if expected_message_contains:
         if expected_message_contains.lower() not in body_text.lower():

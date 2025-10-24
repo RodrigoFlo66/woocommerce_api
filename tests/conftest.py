@@ -40,7 +40,7 @@ def create_product(client, headers, request, logger):
     """
     created_ids = []
 
-    def _create(payload=None, payload_overrides=None, headers_overrides=None):
+    def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None):
         from src.resources.payloads.products.create_product import build_create_product_payload
         from src.api.endpoints import Endpoints
 
@@ -61,7 +61,10 @@ def create_product(client, headers, request, logger):
             hdrs = dict(headers) if headers else {}
 
         logger.info(f"Payload={base_payload} headers={hdrs}")
-        resp = client.post(Endpoints.PRODUCTS.value, json=base_payload, headers=hdrs)
+        if metod is not None:
+            resp = client.delete(Endpoints.PRODUCTS.value, json=base_payload, headers=hdrs)
+        else:
+            resp = client.post(Endpoints.PRODUCTS.value, json=base_payload, headers=hdrs)
         try:
             pid = resp.json().get("id")
             if pid:

@@ -15,11 +15,7 @@ from src.assertions.products.products_asserts import assert_product_failure
     ],
 )
 def test_create_product_parametrized(create_product, payload_overrides, expected_generated_name, expected_status):
-    """Parametrized product creation tests.
-
-    - payload_overrides: dict to replace/modify the generated payload (see fixture behavior)
-    - expected_generated_name: if provided, assert the API generated a name containing this substring
-    - expected_status: expected HTTP status (None for xfail/unknown)
+    """Test parametrizados.
     """
     resp, used_payload = create_product(payload_overrides=payload_overrides)
 
@@ -27,6 +23,12 @@ def test_create_product_parametrized(create_product, payload_overrides, expected
         assert_product_failure(resp, expected_status=400)
     else:
     	assert_product_created(resp, used_payload)
+
+@pytest.mark.negative
+def test_create_product_HTTP_incorrect(create_product):
+    """Intenta crear un producto con metodo HTTP incorrecto."""
+    resp, used_payload = create_product(metod = "DELETE")
+    assert_product_failure(resp, expected_status=404)
 
 @pytest.mark.negative
 def test_create_product_without_headers(create_product):

@@ -19,6 +19,10 @@ class APIClient:
 		url = self._build_url(endpoint)
 		return requests.post(url, json=json, headers=headers, params=params, timeout=self.timeout)
 
-	def delete(self, endpoint: str, headers: dict | None = None, params: dict | None = None):
+	def delete(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.delete(url, headers=headers, params=params, timeout=self.timeout)
+		return requests.delete(url, json=json, headers=headers, params=params, timeout=self.timeout)
+	
+	def getAll(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+		url = self._build_url(endpoint)
+		return requests.get(url, json=json, headers=headers, params=params, timeout=self.timeout)
