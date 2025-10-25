@@ -13,3 +13,15 @@ def product_payload(name: str | None = None) -> dict:
 		"description": fake.sentence(nb_words=10),
 		"short_description": fake.sentence(nb_words=6),
 	}
+
+
+def get600Caracteres() -> str:
+	"""Return a deterministic string of 600 characters for edge-case tests."""
+	base = "ProductoLargo"
+	s = (base * ((600 // len(base)) + 1))[:600]
+	return s
+
+
+def get_name_with_special_chars() -> str:
+	"""Return a short name containing special characters and non-ascii letters."""
+	return "Prueba-ñ-á-Ö-#-$-%-&-()/\\"
