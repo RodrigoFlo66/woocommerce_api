@@ -39,6 +39,10 @@ jobs:
         run: |
           pytest --alluredir=reports/allure-results
 
+      - name: Install Allure (npm)
+        run: |
+          npm install -g allure-commandline --save-dev
+
       - name: Generate Allure HTML report
         run: |
           allure generate reports/allure-results -o reports/allure-report --clean
