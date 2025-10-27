@@ -117,5 +117,34 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
 
     logger.info("Producto no creado (error no específico manejado)")
 
+def assert_product_getted(response, status_code: int = 200):
+    """
+    Assert that a product (or list of products) was successfully retrieved.
+    Validates status code and schema.
+    """
+    try:
+        logger.info(f"Response Body: {response.json()}")
+    except Exception:
+        logger.warning("[GET Product] Response body could not be parsed as JSON.")
 
-__all__ = ["assert_product_created", "assert_product_failure"]
+    assert_status_code(response, expected=status_code)
+
+    schema = json.loads(open("src/resources/schemas/products/product_getAll_response.json").read())
+    assert_schema(response.json(), schema)
+
+def assert_get_failure(response, expected_status: int):
+    """
+    Assert a failed GET response (e.g., 400, 401, 404).
+    Logs full response for debugging.
+    """
+    logger.info(f"Expected Failure Status: {response.status_code}")
+    try:
+        logger.info(f"Expected Failure Body: {response.json()}")
+    except Exception:
+        logger.warning("Expected Failure Response body not in JSON format.")
+
+    assert_status_code(response, expected=expected_status)
+
+
+__all__ = ["assert_product_created", "assert_product_failure", "assert_product_getted", "assert_get_failure"]
+
