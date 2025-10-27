@@ -1,4 +1,4 @@
-from jsonschema import validate
+from jsonschema import validate, ValidationError
 from src.utils.logger import get_logger
 from typing import Iterable
 
@@ -15,12 +15,14 @@ def assert_status_code(response, expected: int):
 
 
 def assert_schema(response_json: dict, schema: dict):
-	try:
-		validate(instance=response_json, schema=schema)
-		logger.success("Validacion de schema exitoso")
-	except Exception as exc:
-		logger.error(f"Validacion de schema fallado: {exc}")
-		raise
+    try:
+        validate(instance=response_json, schema=schema)
+        logger.success("Validación de schema exitosa")
+    except ValidationError as exc:
+        raise AssertionError(f"Validación de schema fallida: {exc.message}")
+    except Exception as exc:
+        logger.error(f"Error inesperado al validar el schema: {exc}")
+        raise
 
 
 def assert_fields_equal(response_json: dict, fields: Iterable[str], request_payload: dict):
