@@ -4,6 +4,7 @@ from src.assertions.products.products_asserts import assert_product_created
 from src.assertions.products.products_asserts import assert_product_failure
 from src.utils.logger import get_logger
 from src.utils.faker_config import get600Caracteres, get_name_with_special_chars
+from src.resources.payloads.products.create_product import product_image_scenarios
 
 logger = get_logger("test_create_product")
 
@@ -24,7 +25,7 @@ logger = get_logger("test_create_product")
     ],
 )
 def test_create_product_parametrized(create_product, payload_overrides, expected_generated_name, expected_status):
-    """Test parametrizados.
+    """Test con payload parametrizados.
     """
     if payload_overrides and isinstance(payload_overrides, dict) and "regular_price" in payload_overrides and "sale_price" in payload_overrides:
         resp, used_payload = create_product(payload_overrides=payload_overrides, merge=True)
@@ -83,3 +84,27 @@ def test_create_product_user_write(create_product, headers_factory):
     hdrs = headers_factory(role='write')
     resp, used_payload = create_product(headers_overrides=hdrs)
     assert_product_created(resp, used_payload)
+
+@pytest.mark.positive
+def test_create_product_user_admin(create_product, headers_factory):
+    """Intenta crear un producto con las credenciales de un usuario administrador(lectura y escritura)."""
+    hdrs = headers_factory()
+    resp, used_payload = create_product(headers_overrides=hdrs)
+    assert_product_created(resp, used_payload)
+
+@pytest.mark.parametrize("scenario",
+    [
+    pytest.param(s, marks=[pytest.mark.positive], id=s["title"]) if s.get("expected_status") == 201
+    else pytest.param(s, marks=[pytest.mark.negative], id=s["title"]) for s in product_image_scenarios()
+    ])
+def test_create_product_with_images(create_product, scenario):
+    """Prueba la creación de productos con distintas configuraciones de imagenes.
+    """
+    payload_overrides = {"images": scenario["images"]}
+    resp, used_payload = create_product(payload_overrides=payload_overrides)
+
+    expected = scenario.get("expected_status")
+    if expected == 201:
+        assert_product_created(resp, used_payload)
+    else:
+        assert_product_failure(resp, expected_status=expected)
