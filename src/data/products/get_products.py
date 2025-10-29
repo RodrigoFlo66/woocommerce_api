@@ -65,7 +65,7 @@ def get_all_products_cases_headers_specs():
         pytest.param("invalid_credentials", 401, marks=pytest.mark.negative, id="get_all_invalid_credentials"),
         pytest.param("expired_credentials", 401, marks=pytest.mark.negative, id="get_all_expired_credentials"),
         pytest.param("user_read", 200, marks=pytest.mark.positive, id="get_all_user_read"),
-        pytest.param("user_write", 200, marks=pytest.mark.negative, id="get_all_user_write"),
+        pytest.param("user_write", 401, marks=[pytest.mark.negative, pytest.mark.xfail(reason= "EL sistema responde para un usuario sin permisos de lectura")], id="get_all_user_write"),
         pytest.param("user_admin", 200, marks=pytest.mark.positive, id="get_all_user_admin"),
         pytest.param("no_content_type", 200, marks=pytest.mark.positive, id="get_all_without_content_type"),
     ]
