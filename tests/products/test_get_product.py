@@ -29,14 +29,12 @@ def test_get_all_products_cases_params(client, headers, query_params, expected_s
         assert_get_failure(resp, expected_status)
 
 @pytest.mark.negative
-@pytest.mark.ejecutar
 def test_get_all_products_HTTP_incorrect(client, headers):
     """Intenta obtener todos los productos con metodo HTTP incorrecto."""
     resp = client.delete(Endpoints.PRODUCTS.value, headers=headers)
     assert_get_failure(resp, expected_status=404)
 
 @pytest.mark.parametrize("case_id, expected_status", get_all_products_cases_headers_specs())
-@pytest.mark.ejecutar
 def test_get_all_products_cases_headers(client, headers, headers_factory, case_id, expected_status):
     """Test parametrizado para validar múltiples escenarios de headers en GET /products.
     """
