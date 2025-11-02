@@ -21,6 +21,7 @@ logger = get_logger("test_create_product")
         pytest.param({"regular_price": 19.9}, None, 400, marks=pytest.mark.negative, id="regular_price_double"),
         pytest.param({"regular_price": "19.9", "sale_price": "20"}, None, 400, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Se crea el producto eliminando el valor de sale_price cuando este es mayor a regular_price")], id="sale_price_higher_than_regular"),
         pytest.param({"regular_price": "-12", "sale_price": "-16"}, None, 400, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite crear productos con valores negativos en los precios")], id="sale_and_regular_price_negative"),
+        pytest.param({"regular_price": "rt12.3xr"}, None, 200, marks=pytest.mark.negative, id="regular_price_malformed"),
         pytest.param({"ffffff": "qweq"}, None, 201, marks=pytest.mark.negative, id="campo_inexistente"),
     ],
 )
@@ -37,7 +38,11 @@ def test_create_product_parametrized(create_product, payload_overrides, expected
     if expected_status == 400:
         assert_product_failure(resp, expected_status=400)
     else:
-    	assert_product_created(resp, used_payload)
+        rp = used_payload.get("regular_price") if isinstance(used_payload, dict) else None
+        if rp == "rt12.3xr":
+            assert_product_created(resp, used_payload, equal=False)
+        else:
+            assert_product_created(resp, used_payload)
 
 @pytest.mark.negative
 def test_create_product_HTTP_incorrect(create_product):

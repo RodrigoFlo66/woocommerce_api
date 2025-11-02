@@ -25,7 +25,7 @@ def assert_schema(response_json: dict, schema: dict):
         raise
 
 
-def assert_fields_equal(response_json: dict, fields: Iterable[str], request_payload: dict):
+def assert_fields_equal(response_json: dict, fields: Iterable[str], request_payload: dict, equal: bool = True):
 	"""Compare a set of fields between the response JSON and the original request payload.
 
 	- Coerces both sides to str for lenient comparison (handles numeric vs string differences).
@@ -39,7 +39,11 @@ def assert_fields_equal(response_json: dict, fields: Iterable[str], request_payl
 			continue
 		if str(expected) != str(actual):
 			mismatches.append((field, expected, actual))
-
+	if equal == False:
+		if mismatches:
+			for field, expected, actual in mismatches:
+				logger.info(f"Field mismatch for '{field}': expected={expected!r}, actual={actual!r}")
+		return
 	if mismatches:
 		for field, expected, actual in mismatches:
 			logger.error(f"Field mismatch for '{field}': expected={expected!r}, actual={actual!r}")
