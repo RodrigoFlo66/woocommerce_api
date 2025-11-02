@@ -23,7 +23,7 @@ def _ensure_payload_dict(request_payload):
     return {}
 
 
-def assert_product_created(response, request_payload, status_code=201):
+def assert_product_created(response, request_payload, status_code=201, equal=True):
     """Assert a successful product creation and that key fields match the request payload.
     """
     req_payload = _ensure_payload_dict(request_payload)
@@ -36,7 +36,7 @@ def assert_product_created(response, request_payload, status_code=201):
         fields_to_check.insert(0, "name")
     try:
         if request_payload != {}:
-            assert_fields_equal(body, fields_to_check, req_payload)
+            assert_fields_equal(body, fields_to_check, req_payload, equal)
     except AssertionError:
         logger.error("One or more field comparisons failed")
         raise
@@ -117,7 +117,7 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
 
     logger.info("Producto no creado (error no específico manejado)")
 
-def assert_product_getted(response, status_code: int = 200):
+def assert_product_getted(response, status_code: int = 200, single_product: bool = False):
     """
     Assert that a product (or list of products) was successfully retrieved.
     Validates status code and schema.
@@ -130,7 +130,11 @@ def assert_product_getted(response, status_code: int = 200):
     assert_status_code(response, expected=status_code)
 
     schema = json.loads(open("src/resources/schemas/products/product_getAll_response.json").read())
-    assert_schema(response.json(), schema)
+    single_schema = json.loads(open("src/resources/schemas/products/product_get_response.json").read())
+    if single_product:
+        assert_schema(response.json(), single_schema)
+    else:
+        assert_schema(response.json(), schema)
 
 def assert_get_failure(response, expected_status: int):
     """

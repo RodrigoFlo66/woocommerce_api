@@ -4,7 +4,7 @@ from src.utils.logger import get_logger
 logger = get_logger("get_products_cases")
 
 def get_all_products_cases_params():
-    """Devuelve una lista de pytest.param para parametrizar tests de query params.
+    """Devuelve una lista de pytest.param para parametrizar tests de params.
     """
     return [
         pytest.param(
@@ -54,6 +54,43 @@ def get_all_products_cases_params():
             200,
             marks=[pytest.mark.positive],
             id="search_600_chars",
+        ),
+        # Casos para path params (usar la clave 'id' en el dict)
+        pytest.param(
+            {"id": "USE_CREATED_PRODUCT"},
+            200,
+            marks=pytest.mark.positive,
+            id="id_producto_valido",
+        ),
+        pytest.param(
+            {"id": 9999999},
+            404,
+            marks=pytest.mark.negative,
+            id="id_producto_invalido",
+        ),
+        pytest.param(
+            {"id": "abc"},
+            404,
+            marks=pytest.mark.negative,
+            id="id_producto_no_numerico",
+        ),
+        pytest.param(
+            {"id": -1},
+            404,
+            marks=pytest.mark.negative,
+            id="id_producto_negativo",
+        ),
+        pytest.param(
+            {"id": "USE_CREATED_PRODUCT"},
+            200,
+            marks=pytest.mark.negative,
+            id="id_producto_malformed",
+        ),
+        pytest.param(
+            {"id": "()&$/&%"},
+            404,
+            marks=pytest.mark.negative,
+            id="id_producto_special_chars",
         ),
     ]
 

@@ -33,7 +33,7 @@ def product_image_scenarios():
         },
         {
             "title": "URL inexistente",
-            "images": [{"src": "https://example.com/no-existe.png"}],
+            "images": [{"src": "https://exfefes.com/no-existe.png"}],
             "expected_status": 400,
         },
         {
