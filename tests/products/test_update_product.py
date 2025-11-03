@@ -1,10 +1,9 @@
 import pytest
-from src.data.products.update_products import put_products_cases_params, put_products_cases_payload
+from src.data.products.update_products import put_products_cases_params, put_products_cases_payload, put_products_cases_headers
 from src.assertions.products.products_asserts import assert_product_update, assert_product_failure
 from src.api.endpoints import Endpoints
 from src.data.products.get_products import (
-    get_headers,
-    get_all_products_cases_headers_specs,
+    get_headers
 )
 
 
@@ -81,7 +80,7 @@ def test_put_products_cases_params(client, payload, headers, create_product, par
         else:
             assert_product_failure(resp, expected_status=expected_status)
 
-@pytest.mark.parametrize("case_id, expected_status", get_all_products_cases_headers_specs())
+@pytest.mark.parametrize("case_id, expected_status", put_products_cases_headers())
 def test_put_products_cases_headers(client, payload, headers, headers_factory, create_product, case_id, expected_status, logger):
     """Test parametrizado para validar múltiples escenarios de headers en PUT /products.
     """
