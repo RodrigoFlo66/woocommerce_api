@@ -55,10 +55,6 @@ def assert_product_created(response, request_payload, status_code=201, equal=Tru
 
 def assert_product_failure(response, expected_status=None, expected_message_contains: str | None = None, expected_field_errors: dict | None = None):
     """Assert that the product creation failed with expected properties.
-
-    - expected_status: int or iterable of ints to match response.status_code
-    - expected_message_contains: substring expected to be present in the error message/body
-    - expected_field_errors: dict mapping field -> substring expected in error details
     """
     logger.info(f"Status code recibido: {response.status_code}, Esperado: {expected_status}")
 
@@ -95,13 +91,13 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
     if status == 401:
         logger.error(f"Unauthorized (401). Response body: {body_text}")
         logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
-        logger.info("Producto no creado por falta de headers de autenticación")
+        logger.info("Falta de headers de autenticación")
         return
     
     if status == 404:
         logger.error(f"Not Found (404). Response body: {body_text}")
         logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
-        logger.info("Producto no creado por metodo http incorrecto")
+        logger.info("Not Found (404)")
         return
 
     if expected_message_contains:
@@ -115,7 +111,7 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
                 logger.error(f"Expected field error for '{field}' containing '{substr}' not found in response body")
                 raise AssertionError(f"Expected field error for '{field}' containing '{substr}' not found")
 
-    logger.info("Producto no creado (error no específico manejado)")
+    logger.info("Error no específico manejado")
 
 def assert_product_getted(response, status_code: int = 200, single_product: bool = False):
     """
@@ -149,6 +145,34 @@ def assert_get_failure(response, expected_status: int):
 
     assert_status_code(response, expected=expected_status)
 
+def assert_product_update(response, request_payload, status_code=200, equal=True):
+    """Assert a successful product update and that key fields match the request payload.
+    """
+    req_payload = _ensure_payload_dict(request_payload)
+    assert_status_code(response, status_code)
+    body = response.json()
+    logger.info(f"Response body: {body}")
+    fields_to_check = ["type", "description", "regular_price"]
+    name_in_request = req_payload.get("name") if isinstance(req_payload, dict) else None
+    if name_in_request is not None:
+        fields_to_check.insert(0, "name")
+    try:
+        if request_payload != {}:
+            assert_fields_equal(body, fields_to_check, req_payload, equal)
+    except AssertionError:
+        logger.error("One or more field comparisons failed")
+        raise
 
-__all__ = ["assert_product_created", "assert_product_failure", "assert_product_getted", "assert_get_failure"]
+    if name_in_request is None:
+        gen_name = body.get("name")
+        if not gen_name:
+            logger.error("API did not generate a product name when none was provided in the request")
+            raise AssertionError("API did not generate a product name")
+        logger.info(f"nombre generado por la API: {gen_name}")
+    schema = json.loads(open("src/resources/schemas/products/product_post_response_schema.json").read())
+    assert_schema(body, schema)
+    logger.success(f"Producto actualizado exitosamente id={body.get('id')}")
+
+__all__ = ["assert_product_created", "assert_product_failure", "assert_product_getted", "assert_get_failure",
+           "assert_product_update"]
 

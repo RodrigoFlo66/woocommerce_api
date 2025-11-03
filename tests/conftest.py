@@ -5,6 +5,8 @@ import pytest
 from src.api.client import APIClient
 from src.utils.logger import get_logger
 from dotenv import load_dotenv
+from src.resources.payloads.products.create_product import build_create_product_payload
+from src.api.endpoints import Endpoints
 load_dotenv()
 
 BASE_URL = os.getenv("BASE_URL")
@@ -83,6 +85,11 @@ def headers_factory():
 
     return _build
 
+@pytest.fixture
+def payload():
+    """Fixture that returns a default product creation payload.
+    """
+    return build_create_product_payload()
 
 @pytest.fixture
 def create_product(client, headers, request, logger):
@@ -90,9 +97,7 @@ def create_product(client, headers, request, logger):
     """
     created_ids = []
 
-    def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None, merge: bool = False):
-        from src.resources.payloads.products.create_product import build_create_product_payload
-        from src.api.endpoints import Endpoints
+    def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None, merge: bool = False, update: bool = False):
         if merge:
             base_payload = build_create_product_payload() if payload is None else dict(payload)
             if payload_overrides is not None:
@@ -114,7 +119,8 @@ def create_product(client, headers, request, logger):
         else:
             hdrs = dict(headers) if headers else {}
 
-        logger.info(f"Payload={base_payload} headers={hdrs}")
+        if update == False:
+            logger.info(f"Payload={base_payload} headers={hdrs}")
         if metod is not None:
             resp = client.delete(Endpoints.PRODUCTS.value, json=base_payload, headers=hdrs)
         else:
@@ -123,6 +129,8 @@ def create_product(client, headers, request, logger):
             pid = resp.json().get("id")
             if pid:
                 created_ids.append(pid)
+                if update == True:
+                    logger.info(f"Producto creado para update, id={pid}, payload={base_payload}")            
         except Exception:
             logger.error("Failed reading response JSON while creating product")
 
