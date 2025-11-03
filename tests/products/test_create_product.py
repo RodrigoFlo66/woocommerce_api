@@ -2,11 +2,9 @@ import pytest
 
 from src.assertions.products.products_asserts import assert_product_created
 from src.assertions.products.products_asserts import assert_product_failure
-from src.utils.logger import get_logger
 from src.data.products.post_products import post_products_cases_params
 from src.resources.payloads.products.create_product import product_image_scenarios
 
-logger = get_logger("test_create_product")
 
 @pytest.mark.parametrize(
     "payload_overrides, expected_generated_name, expected_status", post_products_cases_params(),

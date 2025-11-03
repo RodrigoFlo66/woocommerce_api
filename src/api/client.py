@@ -30,3 +30,11 @@ class APIClient:
 	def get(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
 		return requests.get(url, json=json, headers=headers, params=params, timeout=self.timeout)
+
+	def put(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+		url = self._build_url(endpoint)
+		return requests.put(url, json=json, headers=headers, params=params, timeout=self.timeout)
+
+	def patch(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+		url = self._build_url(endpoint)
+		return requests.patch(url, json=json, headers=headers, params=params, timeout=self.timeout)
