@@ -3,6 +3,7 @@ from typing import Iterable
 
 from src.assertions.api_assertions import assert_status_code, assert_schema, assert_fields_equal
 from src.utils.logger import get_logger
+from src.api.endpoints import Endpoints
 
 logger = get_logger("product_asserts")
 
@@ -172,6 +173,20 @@ def assert_product_update(response, request_payload, status_code=200, equal=True
     schema = json.loads(open("src/resources/schemas/products/product_post_response_schema.json").read())
     assert_schema(body, schema)
     logger.success(f"Producto actualizado exitosamente id={body.get('id')}")
+
+def assert_product_deleted(response, status_code=200, single_product: bool = True, client=None, headers=None, force: bool = False):
+    """Assert a successful product deletion.
+    """
+    assert_product_getted(response, status_code=status_code, single_product=single_product)
+    id_deleted = response.json().get("id")
+    enpoint = Endpoints.PRODUCTS.value
+    target_endpoint = f"{enpoint}/{id_deleted}"
+    resp = client.delete(target_endpoint, headers=headers)
+    logger.info(f"Intentando obtener nuevamente para verificar eliminación.")
+    if force:
+        assert_get_failure(resp, expected_status=404)
+    else:
+        assert_get_failure(resp, expected_status=410)
 
 __all__ = ["assert_product_created", "assert_product_failure", "assert_product_getted", "assert_get_failure",
            "assert_product_update"]
