@@ -130,7 +130,7 @@ def create_product(client, headers, request, logger):
             if pid:
                 created_ids.append(pid)
                 if update == True:
-                    logger.info(f"Producto creado para update, id={pid}, payload={base_payload}")            
+                    logger.info(f"Producto creado, id={pid}, payload={base_payload}")            
         except Exception:
             logger.error("Failed reading response JSON while creating product")
 
