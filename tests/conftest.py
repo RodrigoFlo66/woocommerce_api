@@ -5,7 +5,7 @@ import pytest
 from src.api.client import APIClient
 from src.utils.logger import get_logger
 from dotenv import load_dotenv
-from src.resources.payloads.products.create_product import build_create_product_payload
+from src.resources.payloads.products.payload_products import build_create_product_payload
 from src.api.endpoints import Endpoints
 load_dotenv()
 

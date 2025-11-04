@@ -57,7 +57,7 @@ def assert_product_failure(response, expected_status=None, expected_message_cont
     """Assert that the product creation failed with expected properties.
     """
     logger.info(f"Status code recibido: {response.status_code}, Esperado: {expected_status}")
-
+    logger.info(f"Response body: {response.json()}")
     if expected_status is not None:
         if isinstance(expected_status, Iterable) and not isinstance(expected_status, (str, bytes)):
             assert response.status_code in expected_status, f"Expected status in {expected_status}, got {response.status_code}"
