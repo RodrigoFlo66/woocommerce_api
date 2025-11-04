@@ -3,7 +3,7 @@ import pytest
 from src.assertions.products.products_asserts import assert_product_created
 from src.assertions.products.products_asserts import assert_product_failure
 from src.data.products.post_products import post_products_cases_params
-from src.resources.payloads.products.create_product import product_image_scenarios
+from src.resources.payloads.products.payload_products import payload_product_image_scenarios
 
 
 @pytest.mark.parametrize(
@@ -84,7 +84,7 @@ def test_create_product_user_admin(create_product, headers_factory):
 @pytest.mark.parametrize("scenario",
     [
     pytest.param(s, marks=[pytest.mark.positive], id=s["title"]) if s.get("expected_status") == 201
-    else pytest.param(s, marks=[pytest.mark.negative], id=s["title"]) for s in product_image_scenarios()
+    else pytest.param(s, marks=[pytest.mark.negative], id=s["title"]) for s in payload_product_image_scenarios()
     ])
 def test_create_product_with_images(create_product, scenario):
     """Prueba la creación de productos con distintas configuraciones de imagenes.

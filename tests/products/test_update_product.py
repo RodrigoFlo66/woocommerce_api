@@ -5,6 +5,7 @@ from src.api.endpoints import Endpoints
 from src.data.products.get_products import (
     get_headers
 )
+from src.resources.payloads.products.payload_products import payload_product_image_scenarios
 
 
 @pytest.mark.parametrize(
@@ -98,3 +99,53 @@ def test_put_products_cases_headers(client, payload, headers, headers_factory, c
         assert_product_update(resp, payload, status_code=200)
     else:
         assert_product_failure(resp, expected_status=expected_status)
+
+@pytest.mark.parametrize("scenario",
+    [
+    pytest.param(s, marks=[pytest.mark.positive], id=s["title"]) if s.get("expected_status") == 201
+    else pytest.param(s, marks=[pytest.mark.negative], id=s["title"]) for s in payload_product_image_scenarios()
+    ])
+def test_update_product_with_images(payload, logger, client, headers, create_product, scenario):
+    """Prueba la actualizacion de productos con distintas configuraciones de imagenes.
+    """
+    resp_create, base_payload = create_product(update = True)
+    data_payload = payload
+    payload_overrides = {"images": scenario["images"]}
+    try:
+        pid = resp_create.json().get("id")
+    except Exception:
+        pid = None
+    assert pid is not None, "No se pudo crear el producto base para el caso de update"
+
+    if payload_overrides is None:
+        update_payload = dict(data_payload) if isinstance(data_payload, dict) else {}
+    else:
+        update_payload = dict(data_payload) if isinstance(data_payload, dict) else {}
+        if payload_overrides == {}:
+            update_payload = payload_overrides
+        else:
+            update_payload.update(payload_overrides)
+
+    endpoint = Endpoints.PRODUCT.value.format(pid)
+    logger.info(f"Endpoint de update: {endpoint} Payload de update: {update_payload}")
+    resp_update = client.put(endpoint, json=update_payload, headers=headers)
+    expected = 200 if scenario.get("expected_status") == 201 else scenario.get("expected_status")
+    if expected == 200:
+        assert_product_update(resp_update, update_payload, status_code=200)
+    else:
+        assert_product_failure(resp_update, expected_status=expected)
+
+@pytest.mark.negative
+@pytest.mark.xfail(reason="No sigue la semantica REST documentada y permite usar un metodo HTTP incorrecto (POST) para actualizar productos")
+def test_update_product_HTTP_incorrect(create_product, client, headers, payload, logger):
+    """Intenta actualizar un producto con metodo HTTP incorrecto."""
+    resp_create, used_payload = create_product(update = True)
+    try:
+        pid = resp_create.json().get("id")
+    except Exception:
+        pid = None
+    assert pid is not None, "No se pudo crear el producto base para el caso de update"
+    endpoint = Endpoints.PRODUCT.value.format(pid)
+    logger.info(f"Endpoint de update: {endpoint} Payload de update: {payload}")
+    resp = client.post(endpoint, json=payload, headers=headers)
+    assert_product_failure(resp, expected_status=404)
