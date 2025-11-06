@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WooCommerce Customer Response Schema - Robust",
+  "type": "object",
+  "required": [
+    "id",
+    "email",
+    "first_name",
+    "last_name",
+    "username",
+    "role",
+    "date_created",
+    "billing",
+    "shipping" 
+  ],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID único del cliente generado por el sistema."
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de creación del cliente."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Dirección de correo electrónico única del cliente."
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Nombre de pila del cliente."
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Apellido del cliente."
+    },
+    "role": {
+      "type": "string",
+      "enum": ["customer", "administrator", "editor", "author", "contributor", "subscriber"],
+      "description": "Rol asignado al usuario."
+    },
+    "username": {
+      "type": "string",
+      "description": "Nombre de usuario único."
+    },
+    "billing": {
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "company": { "type": "string" },
+        "address_1": { "type": "string" }, 
+        "address_2": { "type": "string" },
+        "city": { "type": "string" },     
+        "postcode": { "type": "string" },  
+        "state": { "type": "string" },     
+        "email": { 
+          "type": "string", 
+          "anyOf": [
+              { "format": "email" },
+              { "enum": [""] } 
+          ]
+        },
+        "phone": { "type": "string" },
+        "country": { 
+          "type": "string", 
+          "anyOf": [
+            { "pattern": "^[A-Z]{2}$" }, 
+            { "enum": [""] }            
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "description": "Detalles de la dirección de facturación."
+    },
+    "shipping": {
+      "type": "object",
+      "description": "Detalles de la dirección de envío.",
+      "additionalProperties": true
+    },
+    "is_paying_customer": {
+      "type": "boolean",
+      "description": "Indica si el cliente ha realizado un pedido."
+    },
+    "avatar_url": {
+      "type": "string",
+      "format": "url",
+      "description": "URL del avatar del cliente."
+    }
+  },
+  "additionalProperties": true
+}
