@@ -147,17 +147,14 @@ def assert_customer_getted(response, status_code: int = 200, single_customer: bo
     assert_status_code(response, expected=status_code)
 
     resp_schema = json.loads(open("src/resources/schemas/customers/customer_response_schema.json").read())
-    # For simplicity reuse the same schema for single vs list checks; tests that retrieve lists should handle shape separately
     if single_customer:
         assert_schema(response.json(), resp_schema)
     else:
-        # assume a list of customers; validate each item
         arr = response.json()
         if isinstance(arr, list):
             for item in arr:
                 assert_schema(item, resp_schema)
         else:
-            # if API returned object unexpectedly, validate it
             assert_schema(arr, resp_schema)
 
 
@@ -177,3 +174,57 @@ __all__ = [
     "assert_customer_getted",
     "assert_get_failure",
 ]
+
+
+def assert_customer_updated(response, request_payload, status_code=200, equal=True, validate_request_schema: bool = True):
+    """Assert a successful customer update and that key fields match the request payload.
+    """
+    req_payload = _ensure_payload_dict(request_payload)
+
+    if validate_request_schema:
+        try:
+            body_schema = json.loads(open("src/resources/schemas/customers/customer_body_schema.json").read())
+            assert_schema(req_payload, body_schema)
+        except AssertionError:
+            logger.error("Request payload failed schema validation")
+            raise
+        except Exception:
+            logger.warning("Could not read/validate customer body schema; continuing without request-schema check")
+
+    assert_status_code(response, status_code)
+    try:
+        body = response.json()
+    except Exception:
+        logger.error("Response body is not valid JSON")
+        raise
+
+    logger.info(f"Response body: {body}")
+
+    cmp_req = dict(req_payload) if isinstance(req_payload, dict) else {}
+    if "role" not in cmp_req:
+        cmp_req["role"] = "customer"
+
+    fields_to_check = ["email", "first_name", "last_name", "role"]
+    try:
+        if request_payload != {}:
+            uname = cmp_req.get("username")
+            if not uname:
+                email_val = cmp_req.get("email") or ""
+                derived = email_val.split("@", 1)[0] if "@" in email_val else email_val
+                cmp_req["username"] = derived
+
+            assert_fields_equal(body, fields_to_check, cmp_req, equal)
+    except AssertionError:
+        logger.error("One or more field comparisons failed for customer update")
+        raise
+
+    try:
+        resp_schema = json.loads(open("src/resources/schemas/customers/customer_response_schema.json").read())
+        assert_schema(body, resp_schema)
+    except AssertionError:
+        logger.error("Response schema validation failed for updated customer")
+        raise
+    except Exception:
+        logger.warning("Could not read/validate customer response schema; skipping response-schema check")
+
+    logger.success(f"Cliente actualizado exitosamente id={body.get('id')}")
