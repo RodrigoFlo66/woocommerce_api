@@ -158,21 +158,24 @@ def create_customer(client, headers, request, logger):
     created_ids = []
 
     def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None, merge: bool = False, update: bool = False):
-        if merge:
-            base_payload = build_create_customer_payload() if payload is None else dict(payload)
-            if payload_overrides is not None:
-                base_payload.update(payload_overrides)
+        if isinstance(payload, str):
+            base_payload = payload
         else:
-            if payload is None:
-                base_payload = build_create_customer_payload()
-            else:
-                base_payload = dict(payload)
-
-            if payload_overrides is not None:
-                if payload_overrides == {}:
-                    base_payload = payload_overrides
-                else:
+            if merge:
+                base_payload = build_create_customer_payload() if payload is None else dict(payload)
+                if payload_overrides is not None:
                     base_payload.update(payload_overrides)
+            else:
+                if payload is None:
+                    base_payload = build_create_customer_payload()
+                else:
+                    base_payload = dict(payload)
+
+                if payload_overrides is not None:
+                    if payload_overrides == {}:
+                        base_payload = payload_overrides
+                    else:
+                        base_payload.update(payload_overrides)
 
         if headers_overrides is not None:
             hdrs = headers_overrides
@@ -183,9 +186,15 @@ def create_customer(client, headers, request, logger):
             logger.info(f"Customer payload={base_payload} headers={hdrs}")
 
         if metod is not None:
-            resp = client.delete(Endpoints.CUSTOMERS.value, json=base_payload, headers=hdrs)
+            if isinstance(base_payload, str):
+                resp = client.delete(Endpoints.CUSTOMERS.value, data=base_payload, headers=hdrs)
+            else:
+                resp = client.delete(Endpoints.CUSTOMERS.value, json=base_payload, headers=hdrs)
         else:
-            resp = client.post(Endpoints.CUSTOMERS.value, json=base_payload, headers=hdrs)
+            if isinstance(base_payload, str):
+                resp = client.post(Endpoints.CUSTOMERS.value, data=base_payload, headers=hdrs)
+            else:
+                resp = client.post(Endpoints.CUSTOMERS.value, json=base_payload, headers=hdrs)
 
         try:
             cid = resp.json().get("id")

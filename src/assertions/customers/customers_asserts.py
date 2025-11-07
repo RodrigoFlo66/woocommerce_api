@@ -23,19 +23,20 @@ def _ensure_payload_dict(request_payload):
     return {}
 
 
-def assert_customer_created(response, request_payload, status_code=201, equal=True):
+def assert_customer_created(response, request_payload, status_code=201, equal=True, validate_request_schema: bool = True):
     """Assert a successful customer creation.
     """
     req_payload = _ensure_payload_dict(request_payload)
 
-    try:
-        body_schema = json.loads(open("src/resources/schemas/customers/customer_body_schema.json").read())
-        assert_schema(req_payload, body_schema)
-    except AssertionError:
-        logger.error("Falló la validacion del esquema del payload")
-        raise
-    except Exception:
-        logger.warning("Could not read/validate customer body schema; continuing without request-schema check")
+    if validate_request_schema:
+        try:
+            body_schema = json.loads(open("src/resources/schemas/customers/customer_body_schema.json").read())
+            assert_schema(req_payload, body_schema)
+        except AssertionError:
+            logger.error("Request payload failed schema validation")
+            raise
+        except Exception:
+            logger.warning("Could not read/validate customer body schema; continuing without request-schema check")
 
     assert_status_code(response, status_code)
     try:
@@ -52,14 +53,15 @@ def assert_customer_created(response, request_payload, status_code=201, equal=Tr
 
     fields_to_check = ["email", "first_name", "last_name", "username", "role"]
     try:
-        if request_payload != {}:
-            uname = cmp_req.get("username")
-            if not uname:
-                email_val = cmp_req.get("email") or ""
-                derived = email_val.split("@", 1)[0] if "@" in email_val else email_val
-                cmp_req["username"] = derived
+        if validate_request_schema:
+            if request_payload != {}:
+                uname = cmp_req.get("username")
+                if not uname:
+                    email_val = cmp_req.get("email") or ""
+                    derived = email_val.split("@", 1)[0] if "@" in email_val else email_val
+                    cmp_req["username"] = derived
 
-            assert_fields_equal(body, fields_to_check, cmp_req, equal)
+                assert_fields_equal(body, fields_to_check, cmp_req, equal)
     except AssertionError:
         logger.error("Uno o más campos no coinciden en la creación del cliente")
         raise

@@ -15,26 +15,26 @@ class APIClient:
 	def _build_url(self, endpoint: str) -> str:
 		return f"{self.base_url.rstrip('/')}{endpoint}"
 
-	def post(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+	def post(self, endpoint: str, json: dict | None = None, data: object | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.post(url, json=json, headers=headers, params=params, timeout=self.timeout)
+		return requests.post(url, json=json, data=data, headers=headers, params=params, timeout=self.timeout)
 
-	def delete(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+	def delete(self, endpoint: str, json: dict | None = None, data: object | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.delete(url, json=json, headers=headers, params=params, timeout=self.timeout)
+		return requests.delete(url, json=json, data=data, headers=headers, params=params, timeout=self.timeout)
 	
-	def getAll(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+	def getAll(self, endpoint: str, json: dict | None = None, data: object | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.get(url, json=json, headers=headers, params=params, timeout=self.timeout)
+		return requests.get(url, json=json, data=data, headers=headers, params=params, timeout=self.timeout)
 	
-	def get(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+	def get(self, endpoint: str, json: dict | None = None, data: object | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.get(url, json=json, headers=headers, params=params, timeout=self.timeout)
+		return requests.get(url, json=json, data=data, headers=headers, params=params, timeout=self.timeout)
 
-	def put(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+	def put(self, endpoint: str, json: dict | None = None, data: object | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.put(url, json=json, headers=headers, params=params, timeout=self.timeout)
+		return requests.put(url, json=json, data=data, headers=headers, params=params, timeout=self.timeout)
 
-	def patch(self, endpoint: str, json: dict | None = None, headers: dict | None = None, params: dict | None = None):
+	def patch(self, endpoint: str, json: dict | None = None, data: object | None = None, headers: dict | None = None, params: dict | None = None):
 		url = self._build_url(endpoint)
-		return requests.patch(url, json=json, headers=headers, params=params, timeout=self.timeout)
+		return requests.patch(url, json=json, data=data, headers=headers, params=params, timeout=self.timeout)
