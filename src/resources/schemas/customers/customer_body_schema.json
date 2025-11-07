@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WooCommerce Customer Creation Request Schema",
+  "type": "object",
+  "required": [
+    "email"
+  ],
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Dirección de correo electrónico única y requerida para la creación del cliente."
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Nombre de pila del cliente (Opcional)."
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Apellido del cliente (Opcional)."
+    },
+    "username": {
+      "type": "string",
+      "description": "Nombre de usuario. Si se omite, WooCommerce puede generarlo a partir del email (Opcional)."
+    },
+    "billing": {
+      "type": "object",
+      "description": "Detalles de la dirección de facturación (Opcional, pero si se incluye, debe ser un objeto).",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "company": { "type": "string" },
+        "address_1": { "type": "string" },
+        "address_2": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "postcode": { "type": "string" },
+        "country": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "shipping": {
+      "type": "object",
+      "description": "Detalles de la dirección de envío (Opcional, pero si se incluye, debe ser un objeto).",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "company": { "type": "string" },
+        "address_1": { "type": "string" },
+        "address_2": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "postcode": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

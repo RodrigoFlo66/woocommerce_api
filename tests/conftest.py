@@ -6,6 +6,7 @@ from src.api.client import APIClient
 from src.utils.logger import get_logger
 from dotenv import load_dotenv
 from src.resources.payloads.products.payload_products import build_create_product_payload
+from src.resources.payloads.customers.payload_customers import build_create_customer_payload
 from src.api.endpoints import Endpoints
 load_dotenv()
 
@@ -145,6 +146,76 @@ def create_product(client, headers, request, logger):
                 client.delete(endpoint, headers=headers)
             except Exception as exc:
                 logger.error(f"Failed to delete product id={pid}: {exc}")
+
+    request.addfinalizer(_teardown)
+    return _create
+
+
+@pytest.fixture
+def create_customer(client, headers, request, logger):
+    """Factory fixture that returns a callable to create a customer and ensures teardown.
+    """
+    created_ids = []
+
+    def _create(payload=None, payload_overrides=None, headers_overrides=None, metod=None, merge: bool = False, update: bool = False):
+        if isinstance(payload, str):
+            base_payload = payload
+        else:
+            if merge:
+                base_payload = build_create_customer_payload() if payload is None else dict(payload)
+                if payload_overrides is not None:
+                    base_payload.update(payload_overrides)
+            else:
+                if payload is None:
+                    base_payload = build_create_customer_payload()
+                else:
+                    base_payload = dict(payload)
+
+                if payload_overrides is not None:
+                    if payload_overrides == {}:
+                        base_payload = payload_overrides
+                    else:
+                        base_payload.update(payload_overrides)
+
+        if headers_overrides is not None:
+            hdrs = headers_overrides
+        else:
+            hdrs = dict(headers) if headers else {}
+
+        if update == False:
+            logger.info(f"Customer payload={base_payload} headers={hdrs}")
+
+        if metod is not None:
+            if isinstance(base_payload, str):
+                resp = client.delete(Endpoints.CUSTOMERS.value, data=base_payload, headers=hdrs)
+            else:
+                resp = client.delete(Endpoints.CUSTOMERS.value, json=base_payload, headers=hdrs)
+        else:
+            if isinstance(base_payload, str):
+                resp = client.post(Endpoints.CUSTOMERS.value, data=base_payload, headers=hdrs)
+            else:
+                resp = client.post(Endpoints.CUSTOMERS.value, json=base_payload, headers=hdrs)
+
+        try:
+            cid = resp.json().get("id")
+            if cid:
+                created_ids.append(cid)
+                if update == True:
+                    logger.info(f"Customer created, id={cid}, payload={base_payload}")
+        except Exception:
+            logger.error("Failed reading response JSON while creating customer")
+
+        return resp, base_payload
+
+    def _teardown():
+        from src.api.endpoints import Endpoints
+        for cid in created_ids:
+            endpoint = f"{Endpoints.CUSTOMERS.value}/{cid}?force=true"
+            logger.info(f"Tearing down customer id={cid}")
+            try:
+                client.delete(endpoint, headers=headers)
+            except Exception as exc:
+                logger.error(f"Failed to delete customer id={cid}: {exc}")
 
     request.addfinalizer(_teardown)
     return _create
