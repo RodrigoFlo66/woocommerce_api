@@ -88,7 +88,6 @@ def test_update_customer_HTTP_incorrect(client, payload_customer, headers, creat
     resp = client.post(endpoint, json=payload_put, headers=headers)
     assert_customer_failure(resp, expected_status=404)
 
-@pytest.mark.ejecutar
 @pytest.mark.parametrize("params, expected_status", put_customers_cases_params())
 def test_put_customers_cases_params(client, payload_customer, headers, create_customer, params, expected_status, logger):
     """Test parametrizado para PUT /customers/{} con distintos params.
