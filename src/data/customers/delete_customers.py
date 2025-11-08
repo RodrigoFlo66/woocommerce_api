@@ -4,7 +4,7 @@ def delete_customers_headers():
     """Header scenarios specifically for DELETE /customers.
     """
     return [
-        pytest.param("no_headers", 401, [pytest.mark.negative, pytest.mark.smoke], id="no_headers"),
+        pytest.param("no_headers", 401, marks=[pytest.mark.negative, pytest.mark.smoke], id="no_headers"),
         pytest.param("no_content_type", 200, marks=pytest.mark.negative, id="no_content_type"),
         pytest.param("content_type_incorrect", 200, marks=pytest.mark.negative, id="content_type_incorrect"),
         pytest.param("invalid_credentials", 401, marks=pytest.mark.negative, id="invalid_credentials"),
