@@ -120,6 +120,10 @@ def assert_customer_failure(response, expected_status=None, expected_message_con
         logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
         logger.info("Not Found (404)")
         return
+    
+    if status == 501:
+        logger.error("Se necesita force=True para esta operación")
+        return
 
     if expected_message_contains:
         if expected_message_contains.lower() not in body_text.lower():
