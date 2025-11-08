@@ -150,6 +150,11 @@ def create_product(client, headers, request, logger):
     request.addfinalizer(_teardown)
     return _create
 
+@pytest.fixture
+def payload_customer():
+    """Fixture that returns a default customer creation payload.
+    """
+    return build_create_customer_payload()
 
 @pytest.fixture
 def create_customer(client, headers, request, logger):
