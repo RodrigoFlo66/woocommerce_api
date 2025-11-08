@@ -112,8 +112,6 @@ def assert_customer_failure(response, expected_status=None, expected_message_con
         return
 
     if status == 401:
-        logger.error(f"Unauthorized (401). Response body: {body_text}")
-        logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
         logger.info("Falta de headers de autenticación")
         return
 
