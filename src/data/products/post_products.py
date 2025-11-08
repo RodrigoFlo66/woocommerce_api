@@ -4,7 +4,7 @@ from src.utils.faker_config import get600Caracteres, get_name_with_special_chars
 def post_products_cases_params():
     """Define casos parametrizados para POST /products."""
     return [
-        pytest.param(None, None, 201, marks=pytest.mark.smoke, id="valid_full"),
+        pytest.param(None, None, 201, marks=[pytest.mark.positive, pytest.mark.smoke], id="valid_full"),
         pytest.param({"name": None}, "Producto", 201, marks=pytest.mark.negative, id="no_name"),
         pytest.param({"name": get600Caracteres()}, None, 400, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite crear productos con nombres mayores a 600 caracteres")], id="name_600_chars"),
         pytest.param({"name": get_name_with_special_chars()}, None, 201, marks=[pytest.mark.negative, pytest.mark.xfail(reason="La respuesta modifica los caracteres especiales de un nombre")], id="name_special_chars"),

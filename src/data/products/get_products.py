@@ -10,7 +10,7 @@ def get_all_products_cases_params():
         pytest.param(
             {"per_page": 5, "page": 2},
             200,
-            marks=pytest.mark.positive,
+            marks=[pytest.mark.positive, pytest.mark.smoke],
             id="per_page_5_page_2",
         ),
         pytest.param(
@@ -59,7 +59,7 @@ def get_all_products_cases_params():
         pytest.param(
             {"id": "USE_CREATED_PRODUCT"},
             200,
-            marks=pytest.mark.positive,
+            marks=[pytest.mark.positive, pytest.mark.smoke],
             id="id_producto_valido",
         ),
         pytest.param(
@@ -101,9 +101,9 @@ def get_all_products_cases_headers_specs():
         pytest.param("no_headers", 401, marks=pytest.mark.negative, id="get_all_without_headers"),
         pytest.param("invalid_credentials", 401, marks=pytest.mark.negative, id="get_all_invalid_credentials"),
         pytest.param("expired_credentials", 401, marks=pytest.mark.negative, id="get_all_expired_credentials"),
-        pytest.param("user_read", 200, marks=pytest.mark.positive, id="get_all_user_read"),
+        pytest.param("user_read", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="get_all_user_read"),
         pytest.param("user_write", 401, marks=[pytest.mark.negative, pytest.mark.xfail(reason= "EL sistema responde para un usuario sin permisos de lectura")], id="get_all_user_write"),
-        pytest.param("user_admin", 200, marks=pytest.mark.positive, id="get_all_user_admin"),
+        pytest.param("user_admin", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="get_all_user_admin"),
         pytest.param("no_content_type", 200, marks=pytest.mark.positive, id="get_all_without_content_type"),
     ]
 

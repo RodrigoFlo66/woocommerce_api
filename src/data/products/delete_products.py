@@ -7,7 +7,7 @@ def delete_products_cases_params():
         pytest.param(
             {"id": "USE_CREATED_PRODUCT"},
             200,
-            marks=pytest.mark.positive,
+            marks=[pytest.mark.positive, pytest.mark.smoke],
             id="id_producto_valido",
         ),
         pytest.param(

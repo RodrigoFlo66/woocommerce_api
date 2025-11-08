@@ -7,9 +7,9 @@ def put_customers_cases_body():
     """Parametrized cases body for PUT /customers (update customer).
     """
     return [
-        pytest.param(None, 200, True, marks=[pytest.mark.positive], id="update_valid_full"),
+        pytest.param(None, 200, True, marks=[pytest.mark.positive, pytest.mark.smoke], id="update_valid_full"),
         pytest.param({"email": None}, 400, False, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite actualizar el campo obligatorio email con un valor vacio")], id="update_missing_email"),
-        pytest.param({}, 200, False, marks=[pytest.mark.positive], id="update_empty_payload"),
+        pytest.param({}, 200, False, marks=[pytest.mark.positive, pytest.mark.smoke], id="update_empty_payload"),
         pytest.param({"email": "correo@sin_dominio"}, 400, True, marks=[pytest.mark.negative], id="update_email_malformed"),
         pytest.param({"email": "jlopez@example.org"}, 400, True, marks=[pytest.mark.negative], id="update_email_duplicate"),
         pytest.param({"billing": {"phone": "(abc)-***"}}, 200, True, marks=[pytest.mark.negative], id="update_phone_non_numeric"),
@@ -33,8 +33,8 @@ def put_customers_headers_specs():
         pytest.param("invalid_credentials", 401, marks=pytest.mark.negative, id="invalid_credentials"),
         pytest.param("expired_credentials", 401, marks=pytest.mark.negative, id="expired_credentials"),
         pytest.param("user_read", 401, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite actualizar cleintes con un usuario con credenciales de solo lectura")], id="user_read"),
-        pytest.param("user_write", 200, marks=[pytest.mark.positive], id="user_write"),
-        pytest.param("user_admin", 200, marks=pytest.mark.positive, id="user_admin"),
+        pytest.param("user_write", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="user_write"),
+        pytest.param("user_admin", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="user_admin"),
     ]
 
 def put_customers_cases_params():
@@ -44,7 +44,7 @@ def put_customers_cases_params():
         pytest.param(
             {"id": "USE_CREATED"},
             200,
-            marks=pytest.mark.positive,
+            marks=[pytest.mark.positive, pytest.mark.smoke],
             id="id_producto_valido",
         ),
         pytest.param(

@@ -4,7 +4,7 @@ from src.utils.faker_config import get600Caracteres, get_name_with_special_chars
 def put_products_cases_payload():
     """Define casos parametrizados para POST /products."""
     return [
-        pytest.param(None, None, 200, marks=pytest.mark.smoke, id="valid_full"),
+        pytest.param(None, None, 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="valid_full"),
         pytest.param({"name": None}, "Producto", 200, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Al enviar nombre de producto vacio, la api no genera el nombre predeterminado dejandolo vacio")], id="no_name"),
         pytest.param({"name": get600Caracteres()}, None, 400, marks=[pytest.mark.negative, pytest.mark.xfail(reason="Permite actualizar productos con nombres mayores a 600 caracteres")], id="name_600_chars"),
         pytest.param({"name": get_name_with_special_chars()}, None, 200, marks=[pytest.mark.negative, pytest.mark.xfail(reason="La respuesta modifica los caracteres especiales de un nombre")], id="name_special_chars"),
@@ -25,7 +25,7 @@ def put_products_cases_params():
         pytest.param(
             {"id": "USE_CREATED_PRODUCT"},
             200,
-            marks=pytest.mark.positive,
+            marks=[pytest.mark.positive, pytest.mark.smoke],
             id="id_producto_valido",
         ),
         pytest.param(
@@ -97,8 +97,8 @@ def put_products_cases_headers():
         pytest.param("no_headers", 401, marks=pytest.mark.negative, id="without_headers"),
         pytest.param("invalid_credentials", 401, marks=pytest.mark.negative, id="invalid_credentials"),
         pytest.param("expired_credentials", 401, marks=pytest.mark.negative, id="expired_credentials"),
-        pytest.param("user_write", 200, marks=pytest.mark.positive, id="user_write"),
+        pytest.param("user_write", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="user_write"),
         pytest.param("user_read", 401, marks=[pytest.mark.negative, pytest.mark.xfail(reason= "EL sistema responde para un usuario sin permisos de escritura")], id="user_read"),
-        pytest.param("user_admin", 200, marks=pytest.mark.positive, id="user_admin"),
+        pytest.param("user_admin", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="user_admin"),
         pytest.param("no_content_type", 200, marks=pytest.mark.positive, id="without_content_type"),
     ]
