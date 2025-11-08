@@ -9,11 +9,11 @@ def get_all_customers_cases_params():
             200,
             False,
             None,
-            marks=pytest.mark.positive,
+            marks=[pytest.mark.positive, pytest.mark.smoke],
             id="per_page_5_page_2",
         ),
         pytest.param(None, 200, False, None, marks=pytest.mark.positive, id="get_all_no_params"),
-        pytest.param({"orderby": "name", "order": "asc"}, 200, False, None, marks=pytest.mark.positive, id="orderby_name_asc"),
+        pytest.param({"orderby": "name", "order": "asc"}, 200, False, None, marks=[pytest.mark.positive, pytest.mark.smoke], id="orderby_name_asc"),
         pytest.param({"role": "customer", "orderby": "email"}, 400, False, None, id="role_and_orderby_email"),
         pytest.param({"invalidParam": "true"}, 200, False, None, marks=pytest.mark.negative, id="invalid_param"),
         pytest.param({"per_page": 1000}, 400, False, None, marks=pytest.mark.negative, id="per_page_excessive"),
@@ -37,11 +37,11 @@ def get_customers_create_headers_specs():
     """Header scenarios specifically for GET /customers.
     """
     return [
-        pytest.param("no_headers", 401, marks=pytest.mark.negative, id="no_headers"),
+        pytest.param("no_headers", 401, marks=[pytest.mark.negative, pytest.mark.smoke], id="no_headers"),
         pytest.param("no_content_type", 200, marks=pytest.mark.negative, id="no_content_type"),
         pytest.param("invalid_credentials", 401, marks=pytest.mark.negative, id="invalid_credentials"),
         pytest.param("expired_credentials", 401, marks=pytest.mark.negative, id="expired_credentials"),
-        pytest.param("user_read", 200, marks=[pytest.mark.negative], id="user_read"),
+        pytest.param("user_read", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="user_read"),
         pytest.param("user_write", 401, marks=[pytest.mark.positive, pytest.mark.xfail(reason="Permite obtener cleintes con un usuario con credenciales de solo escritura")], id="user_write"),
-        pytest.param("user_admin", 200, marks=pytest.mark.positive, id="user_admin"),
+        pytest.param("user_admin", 200, marks=[pytest.mark.positive, pytest.mark.smoke], id="user_admin"),
     ]
