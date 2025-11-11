@@ -1,0 +1,80 @@
+name: Manual API Tests with Pytest and Allure
+
+on:
+  workflow_dispatch:
+    inputs:
+      mark:
+        description: "Selecciona el tipo de prueba a ejecutar (smoke, positive, negative o all)"
+        required: true
+        default: "all"
+      module:
+        description: "Selecciona el módulo a probar (customers, products o all)"
+        required: true
+        default: "all"
+
+jobs:
+  test:
+    name: Run API Tests Manually
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+      API_KEY : ${{ secrets.API_KEY }}
+      API_SECRET : ${{ secrets.API_SECRET }}
+      API_KEY_READ : ${{ secrets.API_KEY_READ }}
+      API_SECRET_READ : ${{ secrets.API_SECRET_READ }}
+      API_KEY_WRITE : ${{ secrets.API_KEY_WRITE }}
+      API_SECRET_WRITE : ${{ secrets.API_SECRET_WRITE }}
+      API_SECRET_EXPIRED : ${{ secrets.API_SECRET_EXPIRED }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Determine test command
+        id: set-test-command
+        run: |
+          if [ "${{ github.event.inputs.module }}" = "customers" ]; then
+            MODULE_PATH="tests/customers"
+          elif [ "${{ github.event.inputs.module }}" = "products" ]; then
+            MODULE_PATH="tests/products"
+          else
+            MODULE_PATH="tests"
+          fi
+
+          if [ "${{ github.event.inputs.mark }}" = "all" ]; then
+            CMD="pytest $MODULE_PATH --alluredir=reports/allure-results"
+          else
+            CMD="pytest -m \"${{ github.event.inputs.mark }}\" $MODULE_PATH --alluredir=reports/allure-results"
+          fi
+
+          echo "command=$CMD" >> $GITHUB_OUTPUT
+
+      - name: Run Pytest with Allure
+        run: |
+          echo "Running command: ${{ steps.set-test-command.outputs.command }}"
+          eval "${{ steps.set-test-command.outputs.command }}"
+
+      - name: Install Allure (npm)
+        run: |
+          npm install -g allure-commandline --save-dev
+
+      - name: Generate Allure HTML report
+        run: |
+          allure generate reports/allure-results -o reports/allure-report --clean
+
+      - name: Upload Allure HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: reports/
