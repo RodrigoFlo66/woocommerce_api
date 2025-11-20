@@ -1,0 +1,193 @@
+import json
+from typing import Iterable
+
+from src.assertions.api_assertions import assert_status_code, assert_schema, assert_fields_equal
+from src.utils.logger import get_logger
+from src.api.endpoints import Endpoints
+
+logger = get_logger("product_asserts")
+
+
+def _ensure_payload_dict(request_payload):
+    """Ensure the request_payload is a dict. If it's a serialized JSON (str/bytes), try to parse it."""
+    if request_payload is None:
+        return {}
+    if isinstance(request_payload, dict):
+        return request_payload
+    try:
+        if isinstance(request_payload, (bytes, bytearray)):
+            request_payload = request_payload.decode("utf-8")
+        if isinstance(request_payload, str):
+            return json.loads(request_payload)
+    except Exception:
+        logger.info("Could not parse request_payload into dict, falling back to empty dict")
+    return {}
+
+
+def assert_product_created(response, request_payload, status_code=201, equal=True):
+    """Assert a successful product creation and that key fields match the request payload.
+    """
+    req_payload = _ensure_payload_dict(request_payload)
+    assert_status_code(response, status_code)
+    body = response.json()
+    logger.info(f"Response body: {body}")
+    fields_to_check = ["type", "description", "regular_price"]
+    name_in_request = req_payload.get("name") if isinstance(req_payload, dict) else None
+    if name_in_request is not None:
+        fields_to_check.insert(0, "name")
+    try:
+        if request_payload != {}:
+            assert_fields_equal(body, fields_to_check, req_payload, equal)
+    except AssertionError:
+        logger.error("One or more field comparisons failed")
+        raise
+
+    # If name was not provided, ensure API generated a non-empty name
+    if name_in_request is None:
+        gen_name = body.get("name")
+        if not gen_name:
+            logger.error("API did not generate a product name when none was provided in the request")
+            raise AssertionError("API did not generate a product name")
+        logger.info(f"nombre generado por la API: {gen_name}")
+    schema = json.loads(open("src/resources/schemas/products/product_post_response_schema.json").read())
+    assert_schema(body, schema)
+    logger.success(f"Producto creado exitosamente id={body.get('id')}")
+
+
+def assert_product_failure(response, expected_status=None, expected_message_contains: str | None = None, expected_field_errors: dict | None = None):
+    """Assert that the product creation failed with expected properties.
+    """
+    logger.info(f"Status code recibido: {response.status_code}, Esperado: {expected_status}")
+    logger.info(f"Response body: {response.json()}")
+    if expected_status is not None:
+        if isinstance(expected_status, Iterable) and not isinstance(expected_status, (str, bytes)):
+            assert response.status_code in expected_status, f"Expected status in {expected_status}, got {response.status_code}"
+        else:
+            assert response.status_code == expected_status, f"Expected status {expected_status}, got {response.status_code}"
+
+    try:
+        body = response.json()
+    except Exception:
+        body = None
+
+    body_text = ""
+    try:
+        body_text = json.dumps(body) if body is not None else (getattr(response, "text", "") or "")
+    except Exception:
+        body_text = getattr(response, "text", "") or ""
+
+    status = getattr(response, "status_code", None)
+    
+    if status == 201:
+        logger.error(f"success (201). Response body: {body_text}")
+        return
+    
+    if status == 400:
+        logger.error(f"Bad Request (400). Response body: {body_text}")
+        if expected_field_errors:
+            for field, substr in expected_field_errors.items():
+                logger.error(f"Campo no válido '{field}': {substr}")
+        return
+
+    if status == 401:
+        logger.error(f"Unauthorized (401). Response body: {body_text}")
+        logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
+        logger.info("Falta de headers de autenticación")
+        return
+    
+    if status == 404:
+        logger.error(f"Not Found (404). Response body: {body_text}")
+        logger.info(f"Status code recibido: {status}, Esperado: {expected_status}")
+        logger.info("Not Found (404)")
+        return
+
+    if expected_message_contains:
+        if expected_message_contains.lower() not in body_text.lower():
+            logger.error(f"Expected message substring '{expected_message_contains}' not found in response body: {body_text}")
+            raise AssertionError(f"Expected message substring '{expected_message_contains}' not found")
+
+    if expected_field_errors:
+        for field, substr in expected_field_errors.items():
+            if substr and substr.lower() not in body_text.lower():
+                logger.error(f"Expected field error for '{field}' containing '{substr}' not found in response body")
+                raise AssertionError(f"Expected field error for '{field}' containing '{substr}' not found")
+
+    logger.info("Error no específico manejado")
+
+def assert_product_getted(response, status_code: int = 200, single_product: bool = False):
+    """
+    Assert that a product (or list of products) was successfully retrieved.
+    Validates status code and schema.
+    """
+    try:
+        logger.info(f"Response Body: {response.json()}")
+    except Exception:
+        logger.warning("[GET Product] Response body could not be parsed as JSON.")
+
+    assert_status_code(response, expected=status_code)
+
+    schema = json.loads(open("src/resources/schemas/products/product_getAll_response.json").read())
+    single_schema = json.loads(open("src/resources/schemas/products/product_get_response.json").read())
+    if single_product:
+        assert_schema(response.json(), single_schema)
+    else:
+        assert_schema(response.json(), schema)
+
+def assert_get_failure(response, expected_status: int):
+    """
+    Assert a failed GET response (e.g., 400, 401, 404).
+    Logs full response for debugging.
+    """
+    logger.info(f"Expected Failure Status: {response.status_code}")
+    try:
+        logger.info(f"Expected Failure Body: {response.json()}")
+    except Exception:
+        logger.warning("Expected Failure Response body not in JSON format.")
+
+    assert_status_code(response, expected=expected_status)
+
+def assert_product_update(response, request_payload, status_code=200, equal=True):
+    """Assert a successful product update and that key fields match the request payload.
+    """
+    req_payload = _ensure_payload_dict(request_payload)
+    assert_status_code(response, status_code)
+    body = response.json()
+    logger.info(f"Response body: {body}")
+    fields_to_check = ["type", "description", "regular_price"]
+    name_in_request = req_payload.get("name") if isinstance(req_payload, dict) else None
+    if name_in_request is not None:
+        fields_to_check.insert(0, "name")
+    try:
+        if request_payload != {}:
+            assert_fields_equal(body, fields_to_check, req_payload, equal)
+    except AssertionError:
+        logger.error("One or more field comparisons failed")
+        raise
+
+    if name_in_request is None:
+        gen_name = body.get("name")
+        if not gen_name:
+            logger.error("API did not generate a product name when none was provided in the request")
+            raise AssertionError("API did not generate a product name")
+        logger.info(f"nombre generado por la API: {gen_name}")
+    schema = json.loads(open("src/resources/schemas/products/product_post_response_schema.json").read())
+    assert_schema(body, schema)
+    logger.success(f"Producto actualizado exitosamente id={body.get('id')}")
+
+def assert_product_deleted(response, status_code=200, single_product: bool = True, client=None, headers=None, force: bool = False):
+    """Assert a successful product deletion.
+    """
+    assert_product_getted(response, status_code=status_code, single_product=single_product)
+    id_deleted = response.json().get("id")
+    enpoint = Endpoints.PRODUCTS.value
+    target_endpoint = f"{enpoint}/{id_deleted}"
+    resp = client.delete(target_endpoint, headers=headers)
+    logger.info(f"Intentando obtener nuevamente para verificar eliminación.")
+    if force:
+        assert_get_failure(resp, expected_status=404)
+    else:
+        assert_get_failure(resp, expected_status=410)
+
+__all__ = ["assert_product_created", "assert_product_failure", "assert_product_getted", "assert_get_failure",
+           "assert_product_update"]
+

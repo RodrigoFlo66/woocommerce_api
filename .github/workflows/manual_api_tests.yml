@@ -78,4 +78,3 @@ jobs:
         with:
           name: allure-report
           path: reports/
-

@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Product Item Schema",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "slug": { "type": "string" },
+    "permalink": { "type": "string" },
+    "date_created": { "type": "string" },
+    "date_modified": { "type": "string" },
+    "type": { "type": "string" },
+    "status": { "type": "string" },
+    "price": { "type": "string" },
+    "regular_price": { "type": "string" },
+    "on_sale": { "type": "boolean" },
+    "purchasable": { "type": "boolean" },
+    "stock_status": { "type": "string" },
+    "manage_stock": { "type": "boolean" },
+    "stock_quantity": {
+      "type": ["integer", "null"]
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
+        },
+        "required": ["id", "name", "slug"]
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "src": { "type": "string" }
+        },
+        "required": ["id", "src"]
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": { "type": "string" },
+        "width": { "type": "string" },
+        "height": { "type": "string" }
+      },
+      "required": ["length", "width", "height"]
+    },
+    "_links": {
+      "type": "object",
+      "properties": {
+        "self": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "href": { "type": "string" }
+            },
+            "required": ["href"]
+          }
+        },
+        "collection": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "href": { "type": "string" }
+            },
+            "required": ["href"]
+          }
+        }
+      },
+      "required": ["self", "collection"]
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "slug",
+    "price",
+    "type",
+    "status",
+    "purchasable",
+    "stock_status",
+    "categories",
+    "_links"
+  ]
+}
